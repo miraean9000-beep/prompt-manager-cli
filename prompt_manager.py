@@ -118,8 +118,8 @@ def search_prompt(prompts):
 
 
 def select_prompt(prompts):
+    show_list(prompts)
     if not prompts:
-        print("등록된 프롬프트가 없습니다.")
         return None
     choice = read_action_input("프롬프트 번호 (0. 뒤로 가기): ")
     if choice == "0":
