@@ -69,8 +69,22 @@ def add_prompt(prompts):
     print(f"'{title}' 프롬프트를 추가했습니다.")
 
 
+def show_rows(rows, empty_message):
+    if not rows:
+        print(empty_message)
+        return
+    for number, prompt in rows:
+        favorite = "⭐" if prompt["favorite"] else "-"
+        print(f"{number}. [{prompt['category']}] {prompt['title']} {favorite}")
+
+
+def show_list(prompts):
+    show_rows(list(enumerate(prompts, start=1)), "등록된 프롬프트가 없습니다.")
+
+
 MENU = {
     "1": ("프롬프트 추가", add_prompt),
+    "2": ("전체 목록", show_list),
 }
 
 
