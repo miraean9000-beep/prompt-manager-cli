@@ -69,7 +69,7 @@ git config --local user.email "GitHub 커밋 이메일"
 git config --global init.defaultBranch main
 ```
 
-실행 파일은 `prompt_manager.py`입니다. 현재 프로젝트는 로컬 Git 저장소에서 관리하며, 원격 저장소는 계정 연결 후 설정합니다.
+실행 파일은 `prompt_manager.py`입니다. 프로젝트 원격 저장소는 [miraean9000-beep/prompt-manager-cli](https://github.com/miraean9000-beep/prompt-manager-cli)입니다.
 
 ## 사용 예시
 
