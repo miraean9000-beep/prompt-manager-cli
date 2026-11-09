@@ -25,7 +25,52 @@ def load_default_prompts():
     ]
 
 
+def read_nonempty(message):
+    while True:
+        value = input(message).strip()
+        if value:
+            return value
+        print("빈 값은 입력할 수 없습니다.")
+
+
+def get_categories(prompts):
+    return list(dict.fromkeys(CATEGORIES + [prompt["category"] for prompt in prompts]))
+
+
+def choose_category(prompts, allow_custom=False):
+    categories = get_categories(prompts)
+    for number, category in enumerate(categories, start=1):
+        print(f"{number}. {category}")
+    if allow_custom:
+        print("0. 직접 입력")
+    while True:
+        choice = input("카테고리 번호: ").strip()
+        if allow_custom and choice == "0":
+            return read_nonempty("새 카테고리: ")
+        try:
+            index = int(choice) - 1
+        except ValueError:
+            index = -1
+        if 0 <= index < len(categories):
+            return categories[index]
+        print("올바른 카테고리 번호를 입력해 주세요.")
+
+
+def add_prompt(prompts):
+    title = read_nonempty("제목: ")
+    content = read_nonempty("내용: ")
+    category = choose_category(prompts, allow_custom=True)
+    prompts.append({
+        "title": title,
+        "content": content,
+        "category": category,
+        "favorite": False,
+    })
+    print(f"'{title}' 프롬프트를 추가했습니다.")
+
+
 MENU = {
+    "1": ("프롬프트 추가", add_prompt),
 }
 
 
