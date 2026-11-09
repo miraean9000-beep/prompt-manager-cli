@@ -102,11 +102,37 @@ def search_prompt(prompts):
     show_rows(rows, "검색 결과가 없습니다.")
 
 
+def select_prompt(prompts):
+    if not prompts:
+        print("등록된 프롬프트가 없습니다.")
+        return None
+    try:
+        index = int(input("프롬프트 번호: ")) - 1
+    except ValueError:
+        index = -1
+    if 0 <= index < len(prompts):
+        return prompts[index]
+    print("올바른 프롬프트 번호를 입력해 주세요.")
+    return None
+
+
+def show_detail(prompts):
+    prompt = select_prompt(prompts)
+    if prompt is None:
+        return
+    favorite = "⭐ 등록" if prompt["favorite"] else "미등록"
+    print(f"제목: {prompt['title']}")
+    print(f"카테고리: {prompt['category']}")
+    print(f"즐겨찾기: {favorite}")
+    print(f"내용: {prompt['content']}")
+
+
 MENU = {
     "1": ("프롬프트 추가", add_prompt),
     "2": ("전체 목록", show_list),
     "3": ("카테고리별 조회", show_category),
     "4": ("프롬프트 검색", search_prompt),
+    "5": ("프롬프트 상세 보기", show_detail),
 }
 
 
