@@ -136,6 +136,15 @@ def toggle_favorite(prompts):
     print(f"'{prompt['title']}' 즐겨찾기를 {status}했습니다.")
 
 
+def show_favorites(prompts):
+    rows = [
+        (number, prompt)
+        for number, prompt in enumerate(prompts, start=1)
+        if prompt["favorite"]
+    ]
+    show_rows(rows, "즐겨찾기에 등록된 프롬프트가 없습니다.")
+
+
 MENU = {
     "1": ("프롬프트 추가", add_prompt),
     "2": ("전체 목록", show_list),
@@ -143,6 +152,7 @@ MENU = {
     "4": ("프롬프트 검색", search_prompt),
     "5": ("프롬프트 상세 보기", show_detail),
     "6": ("즐겨찾기 추가/해제", toggle_favorite),
+    "7": ("즐겨찾기 목록", show_favorites),
 }
 
 
