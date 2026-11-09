@@ -23,3 +23,36 @@ def load_default_prompts():
             "favorite": False,
         },
     ]
+
+
+MENU = {
+}
+
+
+def show_menu():
+    print("\n=== 프롬프트 관리 콘솔 ===")
+    for number, (label, _) in MENU.items():
+        print(f"{number}. {label}")
+    print("0. 종료")
+
+
+def main():
+    prompts = load_default_prompts()
+    while True:
+        show_menu()
+        choice = input("메뉴 번호: ").strip()
+        if choice == "0":
+            print("프로그램을 종료합니다.")
+            return
+        if choice in MENU:
+            _, action = MENU[choice]
+            action(prompts)
+        else:
+            print("올바른 메뉴 번호를 입력해 주세요.")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (EOFError, KeyboardInterrupt):
+        print("\n프로그램을 종료합니다.")
