@@ -1,28 +1,75 @@
+import json
+from pathlib import Path
+import sys
+from tempfile import NamedTemporaryFile
+
+
 CATEGORIES = ["텍스트 생성", "이미지 생성", "영상 생성", "페르소나", "자동화", "기타"]
+DATA_FILE = Path(__file__).with_name("prompts.json")
 
 
 def load_default_prompts():
-    """실행할 때마다 새 프롬프트 목록을 만든다."""
+    """저장 파일이 없을 때 쓸 기본 프롬프트를 만든다."""
     return [
         {
             "title": "회의록 요약",
             "content": "회의록을 핵심 결정, 담당자, 마감일로 정리해 주세요.",
             "category": "텍스트 생성",
             "favorite": False,
+            "views": 0,
         },
         {
             "title": "제주 여행 포스터",
             "content": "푸른 바다와 현무암 해변을 담은 제주 여행 포스터를 만들어 주세요.",
             "category": "이미지 생성",
             "favorite": False,
+            "views": 0,
         },
         {
             "title": "파이썬 학습 코치",
             "content": "초보자의 답을 듣고 다음 힌트를 한 단계씩 주는 코치로 행동해 주세요.",
             "category": "페르소나",
             "favorite": False,
+            "views": 0,
         },
     ]
+
+
+def load_prompts():
+    try:
+        prompts = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        prompts = load_default_prompts()
+        save_prompts(prompts)
+        return prompts
+
+    if not isinstance(prompts, list):
+        raise ValueError("프롬프트 저장 형식은 리스트여야 합니다.")
+    for prompt in prompts:
+        if not isinstance(prompt, dict) or not all(
+            isinstance(prompt.get(field), str) for field in ("title", "content", "category")
+        ):
+            raise ValueError("저장된 프롬프트에 제목, 내용 또는 카테고리가 없습니다.")
+        favorite = prompt.setdefault("favorite", False)
+        views = prompt.setdefault("views", 0)
+        if type(favorite) is not bool or type(views) is not int or views < 0:
+            raise ValueError("저장된 즐겨찾기 또는 조회수 형식이 올바르지 않습니다.")
+    return prompts
+
+
+def save_prompts(prompts):
+    file = NamedTemporaryFile(
+        mode="w", encoding="utf-8", dir=DATA_FILE.parent,
+        prefix=".prompts-", suffix=".tmp", delete=False,
+    )
+    temporary_path = Path(file.name)
+    try:
+        with file:
+            json.dump(prompts, file, ensure_ascii=False, indent=2)
+            file.write("\n")
+        temporary_path.replace(DATA_FILE)
+    finally:
+        temporary_path.unlink(missing_ok=True)
 
 
 class ReturnToMenu(Exception):
@@ -80,7 +127,9 @@ def add_prompt(prompts):
         "content": content,
         "category": category,
         "favorite": False,
+        "views": 0,
     })
+    save_prompts(prompts)
     print(f"추가 완료: {len(prompts)}번 [{category}] {title}")
 
 
@@ -90,7 +139,7 @@ def show_rows(rows, empty_message):
         return
     for number, prompt in rows:
         favorite = "⭐" if prompt["favorite"] else "-"
-        print(f"{number}. [{prompt['category']}] {prompt['title']} {favorite}")
+        print(f"{number}. [{prompt['category']}] {prompt['title']} {favorite} (조회수 {prompt['views']})")
 
 
 def show_list(prompts):
@@ -118,7 +167,7 @@ def search_prompt(prompts):
     show_rows(rows, "검색 결과가 없습니다.")
 
 
-def select_prompt(prompts):
+def select_prompt_index(prompts):
     show_list(prompts)
     if not prompts:
         return None
@@ -130,27 +179,33 @@ def select_prompt(prompts):
     except ValueError:
         index = -1
     if 0 <= index < len(prompts):
-        return prompts[index]
+        return index
     print("올바른 프롬프트 번호를 입력해 주세요.")
     return None
 
 
 def show_detail(prompts):
-    prompt = select_prompt(prompts)
-    if prompt is None:
+    index = select_prompt_index(prompts)
+    if index is None:
         return
+    prompt = prompts[index]
+    prompt["views"] += 1
+    save_prompts(prompts)
     favorite = "⭐ 등록" if prompt["favorite"] else "미등록"
     print(f"제목: {prompt['title']}")
     print(f"카테고리: {prompt['category']}")
     print(f"즐겨찾기: {favorite}")
+    print(f"조회수: {prompt['views']}")
     print(f"내용: {prompt['content']}")
 
 
 def toggle_favorite(prompts):
-    prompt = select_prompt(prompts)
-    if prompt is None:
+    index = select_prompt_index(prompts)
+    if index is None:
         return
+    prompt = prompts[index]
     prompt["favorite"] = not prompt["favorite"]
+    save_prompts(prompts)
     status = "⭐ 즐겨찾기 등록 완료" if prompt["favorite"] else "즐겨찾기 해제 완료"
     print(f"{status}: {prompt['title']}")
 
@@ -164,6 +219,29 @@ def show_favorites(prompts):
     show_rows(rows, "즐겨찾기에 등록된 프롬프트가 없습니다.")
 
 
+def show_top_prompts(prompts):
+    rows = sorted(
+        enumerate(prompts, start=1),
+        key=lambda row: row[1]["views"],
+        reverse=True,
+    )
+    show_rows(rows, "등록된 프롬프트가 없습니다.")
+
+
+def delete_prompt(prompts):
+    index = select_prompt_index(prompts)
+    if index is None:
+        return
+    title = prompts[index]["title"]
+    confirmation = read_action_input(f"'{title}'을 삭제할까요? (y/N): ")
+    if confirmation.casefold() != "y":
+        print("삭제를 취소했습니다.")
+        return
+    del prompts[index]
+    save_prompts(prompts)
+    print(f"삭제 완료: {title}")
+
+
 MENU = {
     "1": ("프롬프트 추가", add_prompt),
     "2": ("전체 목록", show_detail),
@@ -172,6 +250,8 @@ MENU = {
     "5": ("프롬프트 상세 보기", show_detail),
     "6": ("즐겨찾기 추가/해제", toggle_favorite),
     "7": ("즐겨찾기 목록", show_favorites),
+    "8": ("조회수 TOP 목록", show_top_prompts),
+    "9": ("프롬프트 삭제", delete_prompt),
 }
 
 
@@ -183,7 +263,7 @@ def show_menu():
 
 
 def main():
-    prompts = load_default_prompts()
+    prompts = load_prompts()
     while True:
         show_menu()
         choice = input("메뉴 번호: ").strip()
@@ -208,3 +288,5 @@ if __name__ == "__main__":
         main()
     except (EOFError, KeyboardInterrupt):
         print("\n프로그램을 종료합니다.")
+    except (OSError, ValueError) as error:
+        sys.exit(f"프롬프트 파일을 읽거나 저장하지 못했습니다. ({DATA_FILE.name}) {error}")
