@@ -92,10 +92,21 @@ def show_category(prompts):
     show_rows(rows, "이 카테고리에 등록된 프롬프트가 없습니다.")
 
 
+def search_prompt(prompts):
+    keyword = read_nonempty("검색어: ").casefold()
+    rows = [
+        (number, prompt)
+        for number, prompt in enumerate(prompts, start=1)
+        if keyword in prompt["title"].casefold() or keyword in prompt["content"].casefold()
+    ]
+    show_rows(rows, "검색 결과가 없습니다.")
+
+
 MENU = {
     "1": ("프롬프트 추가", add_prompt),
     "2": ("전체 목록", show_list),
     "3": ("카테고리별 조회", show_category),
+    "4": ("프롬프트 검색", search_prompt),
 }
 
 
