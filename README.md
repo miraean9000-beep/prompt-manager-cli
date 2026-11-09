@@ -193,6 +193,30 @@ git -C $sample log -3 --oneline
 | `git pull` | 원격 변경을 가져와 현재 브랜치에 통합 |
 | `git push` | 로컬 커밋을 연결된 원격 저장소로 전송 |
 
+## 개발 및 실행 화면
+
+Windows의 VSCode에서 실제 명령과 프로그램의 실행 기록을 열어 캡처했습니다. Git 그래프에는 기능별 커밋과 `feature/prompt-list` 병합이 표시됩니다.
+
+### 개발 환경
+
+![VSCode에서 확인한 Python 버전, Hello 출력, Git 버전과 설정](docs/screenshots/01-environment.png)
+
+### 메뉴와 프롬프트 추가
+
+![전체 메뉴와 프롬프트 추가 완료](docs/screenshots/02-menu-add.png)
+
+### 전체 목록, 상세 보기, 검색
+
+![전체 목록에서 항목을 연 화면과 제목 검색 결과](docs/screenshots/03-list-search.png)
+
+### 즐겨찾기, 수정, 조회수 TOP, 삭제
+
+![즐겨찾기 등록, 수정 완료, 조회수 순위, 삭제 완료](docs/screenshots/04-management.png)
+
+### Git 커밋과 병합 그래프
+
+![git log --oneline --graph 실행 결과](docs/screenshots/05-git-graph.png)
+
 ## 선택 확장 설계
 
 - **제목 정책**을 바꿀 경우 중복 제목을 입력 단계에서 거절하거나, 사용자에게 확인한 뒤 제목에 번호 접미사를 붙이는 방식을 선택할 수 있습니다.
