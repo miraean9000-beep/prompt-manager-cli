@@ -127,12 +127,22 @@ def show_detail(prompts):
     print(f"내용: {prompt['content']}")
 
 
+def toggle_favorite(prompts):
+    prompt = select_prompt(prompts)
+    if prompt is None:
+        return
+    prompt["favorite"] = not prompt["favorite"]
+    status = "추가" if prompt["favorite"] else "해제"
+    print(f"'{prompt['title']}' 즐겨찾기를 {status}했습니다.")
+
+
 MENU = {
     "1": ("프롬프트 추가", add_prompt),
     "2": ("전체 목록", show_list),
     "3": ("카테고리별 조회", show_category),
     "4": ("프롬프트 검색", search_prompt),
     "5": ("프롬프트 상세 보기", show_detail),
+    "6": ("즐겨찾기 추가/해제", toggle_favorite),
 }
 
 
