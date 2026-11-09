@@ -82,9 +82,20 @@ def show_list(prompts):
     show_rows(list(enumerate(prompts, start=1)), "등록된 프롬프트가 없습니다.")
 
 
+def show_category(prompts):
+    category = choose_category(prompts)
+    rows = [
+        (number, prompt)
+        for number, prompt in enumerate(prompts, start=1)
+        if prompt["category"] == category
+    ]
+    show_rows(rows, "이 카테고리에 등록된 프롬프트가 없습니다.")
+
+
 MENU = {
     "1": ("프롬프트 추가", add_prompt),
     "2": ("전체 목록", show_list),
+    "3": ("카테고리별 조회", show_category),
 }
 
 
