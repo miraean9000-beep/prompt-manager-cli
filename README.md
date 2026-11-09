@@ -61,7 +61,16 @@ git config --local --list
 git branch --show-current
 ```
 
-`python`이 Microsoft Store 바로가기로 연결되는 Windows 환경에서는 `py -3`으로 실행할 수 있습니다. Git 사용자 정보는 이 프로젝트의 로컬 저장소에 설정했습니다. 새 환경에서는 아래 예시의 이름과 이메일을 자신의 정보로 바꿉니다.
+`python`이 Microsoft Store 바로가기로 연결되는 Windows 환경에서는 `py -3`으로 실행할 수 있습니다.
+
+이 프로젝트에서 실행한 `git config --local --list` 출력 중 커밋 작성자 설정은 다음과 같습니다.
+
+```text
+user.name=birdcross
+user.email=164135259+birdcross@users.noreply.github.com
+```
+
+새 환경에서 작성자 정보를 설정할 때는 아래 예시의 이름과 이메일을 자신의 정보로 바꿉니다.
 
 ```powershell
 git config --local user.name "GitHub 사용자 이름"
