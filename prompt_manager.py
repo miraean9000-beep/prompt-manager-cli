@@ -166,7 +166,7 @@ def show_favorites(prompts):
 
 MENU = {
     "1": ("프롬프트 추가", add_prompt),
-    "2": ("전체 목록", show_list),
+    "2": ("전체 목록", show_detail),
     "3": ("카테고리별 조회", show_category),
     "4": ("프롬프트 검색", search_prompt),
     "5": ("프롬프트 상세 보기", show_detail),
