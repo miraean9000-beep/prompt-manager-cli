@@ -25,9 +25,20 @@ def load_default_prompts():
     ]
 
 
+class ReturnToMenu(Exception):
+    """현재 기능을 취소하고 메인 메뉴로 돌아간다."""
+
+
+def read_action_input(message):
+    value = input(f"[뒤로 가기: /뒤로] {message}").strip()
+    if value == "/뒤로":
+        raise ReturnToMenu
+    return value
+
+
 def read_nonempty(message):
     while True:
-        value = input(message).strip()
+        value = read_action_input(message)
         if value:
             return value
         print("빈 값은 입력할 수 없습니다.")
@@ -43,10 +54,14 @@ def choose_category(prompts, allow_custom=False):
         print(f"{number}. {category}")
     if allow_custom:
         print("0. 직접 입력")
+    else:
+        print("0. 뒤로 가기")
     while True:
-        choice = input("카테고리 번호: ").strip()
-        if allow_custom and choice == "0":
-            return read_nonempty("새 카테고리: ")
+        choice = read_action_input("카테고리 번호: ")
+        if choice == "0":
+            if allow_custom:
+                return read_nonempty("새 카테고리: ")
+            raise ReturnToMenu
         try:
             index = int(choice) - 1
         except ValueError:
@@ -106,8 +121,11 @@ def select_prompt(prompts):
     if not prompts:
         print("등록된 프롬프트가 없습니다.")
         return None
+    choice = read_action_input("프롬프트 번호 (0. 뒤로 가기): ")
+    if choice == "0":
+        raise ReturnToMenu
     try:
-        index = int(input("프롬프트 번호: ")) - 1
+        index = int(choice) - 1
     except ValueError:
         index = -1
     if 0 <= index < len(prompts):
@@ -173,7 +191,10 @@ def main():
             return
         if choice in MENU:
             _, action = MENU[choice]
-            action(prompts)
+            try:
+                action(prompts)
+            except ReturnToMenu:
+                print("메인 메뉴로 돌아갑니다.")
         else:
             print("올바른 메뉴 번호를 입력해 주세요.")
 
