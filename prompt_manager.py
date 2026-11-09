@@ -81,7 +81,7 @@ def add_prompt(prompts):
         "category": category,
         "favorite": False,
     })
-    print(f"'{title}' 프롬프트를 추가했습니다.")
+    print(f"추가 완료: {len(prompts)}번 [{category}] {title}")
 
 
 def show_rows(rows, empty_message):
@@ -94,6 +94,7 @@ def show_rows(rows, empty_message):
 
 
 def show_list(prompts):
+    print(f"등록된 프롬프트: {len(prompts)}개")
     show_rows(list(enumerate(prompts, start=1)), "등록된 프롬프트가 없습니다.")
 
 
@@ -150,8 +151,8 @@ def toggle_favorite(prompts):
     if prompt is None:
         return
     prompt["favorite"] = not prompt["favorite"]
-    status = "추가" if prompt["favorite"] else "해제"
-    print(f"'{prompt['title']}' 즐겨찾기를 {status}했습니다.")
+    status = "⭐ 즐겨찾기 등록 완료" if prompt["favorite"] else "즐겨찾기 해제 완료"
+    print(f"{status}: {prompt['title']}")
 
 
 def show_favorites(prompts):
@@ -190,11 +191,14 @@ def main():
             print("프로그램을 종료합니다.")
             return
         if choice in MENU:
-            _, action = MENU[choice]
+            label, action = MENU[choice]
+            print(f"\n--- {label} ---")
             try:
                 action(prompts)
             except ReturnToMenu:
                 print("메인 메뉴로 돌아갑니다.")
+            else:
+                input("\nEnter를 누르면 메인 메뉴로 돌아갑니다. ")
         else:
             print("올바른 메뉴 번호를 입력해 주세요.")
 
