@@ -3,4 +3,5 @@ __pycache__/
 .venv/
 .vscode/
 /prompts.json
-/.prompts-*.tmp
+/data/prompts.json
+/data/.prompts-*.tmp

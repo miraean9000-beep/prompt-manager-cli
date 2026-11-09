@@ -5,7 +5,8 @@ from tempfile import NamedTemporaryFile
 
 
 CATEGORIES = ["텍스트 생성", "이미지 생성", "영상 생성", "페르소나", "자동화", "기타"]
-DATA_FILE = Path(__file__).with_name("prompts.json")
+LEGACY_DATA_FILE = Path(__file__).resolve().with_name("prompts.json")
+DATA_FILE = LEGACY_DATA_FILE.parent / "data" / "prompts.json"
 
 
 def load_default_prompts():
@@ -37,12 +38,22 @@ def load_default_prompts():
 
 def load_prompts():
     try:
-        prompts = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+        raw_data = DATA_FILE.read_text(encoding="utf-8")
     except FileNotFoundError:
-        prompts = load_default_prompts()
+        try:
+            raw_data = LEGACY_DATA_FILE.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            prompts = load_default_prompts()
+            save_prompts(prompts)
+            return prompts
+        prompts = parse_prompts(raw_data)
         save_prompts(prompts)
         return prompts
+    return parse_prompts(raw_data)
 
+
+def parse_prompts(raw_data):
+    prompts = json.loads(raw_data)
     if not isinstance(prompts, list):
         raise ValueError("프롬프트 저장 형식은 리스트여야 합니다.")
     for prompt in prompts:
@@ -58,6 +69,7 @@ def load_prompts():
 
 
 def save_prompts(prompts):
+    DATA_FILE.parent.mkdir(exist_ok=True)
     file = NamedTemporaryFile(
         mode="w", encoding="utf-8", dir=DATA_FILE.parent,
         prefix=".prompts-", suffix=".tmp", delete=False,
@@ -95,7 +107,7 @@ def get_categories(prompts):
     return list(dict.fromkeys(CATEGORIES + [prompt["category"] for prompt in prompts]))
 
 
-def choose_category(prompts, allow_custom=False):
+def choose_category(prompts, allow_custom=False, current=None):
     categories = get_categories(prompts)
     for number, category in enumerate(categories, start=1):
         print(f"{number}. {category}")
@@ -103,8 +115,12 @@ def choose_category(prompts, allow_custom=False):
         print("0. 직접 입력")
     else:
         print("0. 뒤로 가기")
+    if current is not None:
+        print(f"Enter. 현재 카테고리 유지 [{current}]")
     while True:
         choice = read_action_input("카테고리 번호: ")
+        if not choice and current is not None:
+            return current
         if choice == "0":
             if allow_custom:
                 return read_nonempty("새 카테고리: ")
@@ -242,6 +258,20 @@ def delete_prompt(prompts):
     print(f"삭제 완료: {title}")
 
 
+def edit_prompt(prompts):
+    index = select_prompt_index(prompts)
+    if index is None:
+        return
+    prompt = prompts[index]
+    print("Enter를 누르면 기존 값을 유지합니다.")
+    title = read_action_input(f"제목 [{prompt['title']}]: ") or prompt["title"]
+    content = read_action_input(f"내용 [{prompt['content']}]: ") or prompt["content"]
+    category = choose_category(prompts, allow_custom=True, current=prompt["category"])
+    prompt.update(title=title, content=content, category=category)
+    save_prompts(prompts)
+    print(f"수정 완료: {index + 1}번 [{category}] {title}")
+
+
 MENU = {
     "1": ("프롬프트 추가", add_prompt),
     "2": ("전체 목록", show_detail),
@@ -252,6 +282,7 @@ MENU = {
     "7": ("즐겨찾기 목록", show_favorites),
     "8": ("조회수 TOP 목록", show_top_prompts),
     "9": ("프롬프트 삭제", delete_prompt),
+    "10": ("프롬프트 수정", edit_prompt),
 }
 
 
@@ -289,4 +320,4 @@ if __name__ == "__main__":
     except (EOFError, KeyboardInterrupt):
         print("\n프로그램을 종료합니다.")
     except (OSError, ValueError) as error:
-        sys.exit(f"프롬프트 파일을 읽거나 저장하지 못했습니다. ({DATA_FILE.name}) {error}")
+        sys.exit(f"프롬프트 파일을 읽거나 저장하지 못했습니다. {error}")
